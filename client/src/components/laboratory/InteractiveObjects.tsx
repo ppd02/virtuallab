@@ -11,38 +11,29 @@ export function InteractiveObjects() {
   const { handleInteract } = useEquipmentInteraction();
   const { playHit } = useAudio();
   
-  // Get keyboard controls state subscriptions
-  const forward = useKeyboardControls((state) => state.forward);
-  const backward = useKeyboardControls((state) => state.backward);
-  const left = useKeyboardControls((state) => state.left);
-  const right = useKeyboardControls((state) => state.right);
-  const interact = useKeyboardControls((state) => state.interact);
-  const rotateLeft = useKeyboardControls((state) => state.rotateLeft);
-  const rotateRight = useKeyboardControls((state) => state.rotateRight);
-  const rotateLookUp = useKeyboardControls((state) => state.rotateLookUp);
-  const rotateLookDown = useKeyboardControls((state) => state.rotateLookDown);
+  // Get keyboard controls state and subscribe method
+  const [, getKeyboardState] = useKeyboardControls();
   
   // Track previous interact state for edge detection
   const prevInteractRef = useRef(false);
   
   // Add handlers for keyboard navigation
   useEffect(() => {
-    const unsubMovement = useKeyboardControls.subscribe(
-      (state) => state.forward || state.backward || state.left || state.right,
-      (isMoving) => {
-        if (isMoving) {
-          // Play a subtle sound when moving
-          if (Math.random() > 0.9) {
-            playHit();
-          }
+    // We'll handle movement sounds in the frame loop instead of with a subscription
+    const soundInterval = setInterval(() => {
+      const state = getKeyboardState();
+      if (state.forward || state.backward || state.left || state.right) {
+        // Play a subtle sound when moving, but not too frequently
+        if (Math.random() > 0.9) {
+          playHit();
         }
       }
-    );
+    }, 200); // Check movement every 200ms
     
     return () => {
-      unsubMovement();
+      clearInterval(soundInterval);
     };
-  }, [playHit]);
+  }, [getKeyboardState, playHit]);
   
   // Handle movement with frame timing
   useFrame(() => {
@@ -52,25 +43,28 @@ export function InteractiveObjects() {
       lookUpDown
     } = useLabStore.getState();
     
+    // Get current keyboard state
+    const state = getKeyboardState();
+    
     // Handle player movement
-    if (forward) movePlayer("forward");
-    if (backward) movePlayer("backward");
-    if (left) movePlayer("left");
-    if (right) movePlayer("right");
+    if (state.forward) movePlayer("forward");
+    if (state.backward) movePlayer("backward");
+    if (state.left) movePlayer("left");
+    if (state.right) movePlayer("right");
     
     // Handle player rotation
-    if (rotateLeft) rotatePlayer("left");
-    if (rotateRight) rotatePlayer("right");
+    if (state.rotateLeft) rotatePlayer("left");
+    if (state.rotateRight) rotatePlayer("right");
     
     // Handle camera look angle
-    if (rotateLookUp) lookUpDown("up");
-    if (rotateLookDown) lookUpDown("down");
+    if (state.rotateLookUp) lookUpDown("up");
+    if (state.rotateLookDown) lookUpDown("down");
     
     // Handle interactions with equipment (edge detection)
-    if (interact && !prevInteractRef.current) {
+    if (state.interact && !prevInteractRef.current) {
       handleInteract();
     }
-    prevInteractRef.current = interact;
+    prevInteractRef.current = state.interact;
     
     // Update camera position and rotation from lab store
     const { playerPosition, playerRotation, cameraLookAngle } = useLabStore.getState();
