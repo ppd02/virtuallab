@@ -278,55 +278,260 @@ export const useLabStore = create<LabStoreState>()(
       
       if (!sourceEquipment || !targetEquipment) {
         console.log(`Cannot mix chemicals: Equipment not found`);
+        get().setMessage("Error: Could not find equipment to mix");
         return {};
       }
       
-      if (!sourceEquipment.contents || !targetEquipment.contents) {
-        console.log(`Cannot mix chemicals: No contents to mix`);
+      // Check if source has contents
+      if (!sourceEquipment.contents || sourceEquipment.contents.length === 0) {
+        console.log(`Cannot mix chemicals: Source has no contents`);
+        get().setMessage(`${sourceEquipment.name} is empty`);
         return {};
       }
       
-      // Update the target equipment with combined contents
-      const updatedEquipment = state.equipment.map(e => {
-        if (e.id === targetId) {
+      // Create updated equipment array
+      const updatedEquipment = state.equipment.map(item => {
+        if (item.id === targetId) {
+          // Add source contents to target
+          const newContents = [
+            ...(item.contents || []),
+            ...(sourceEquipment.contents || [])
+          ];
+          
+          // Determine color based on mixture
+          let color = item.color || sourceEquipment.color || "#a0c8ff";
+          if (newContents.length > 1) {
+            // Simple color mixing logic
+            if (newContents.includes("Acid") && newContents.includes("Base")) {
+              color = "#32a852"; // Green for neutralization
+            } else if (newContents.includes("Copper Sulfate") && newContents.includes("Sodium Hydroxide")) {
+              color = "#1e3799"; // Blue for copper hydroxide
+            } else if (newContents.includes("Potassium Iodide") && newContents.includes("Lead Nitrate")) {
+              color = "#f9ca24"; // Yellow for lead iodide
+            } else {
+              // Default mixture color
+              color = "#9c88ff";
+            }
+          }
+          
           return {
-            ...e,
-            contents: [...e.contents!, ...sourceEquipment.contents!],
-            // Change color based on mixing (simplified)
-            color: "#" + Math.floor(Math.random()*16777215).toString(16)
+            ...item,
+            contents: newContents,
+            color
           };
         }
-        if (e.id === sourceId) {
+        
+        if (item.id === sourceId && sourceEquipment.type === "chemical") {
+          // Chemicals don't get emptied (represent bottles that still have more)
+          return item;
+        } else if (item.id === sourceId) {
+          // Empty the source container
           return {
-            ...e,
-            contents: [] // Empty the source
+            ...item,
+            contents: [],
+            color: "transparent"
           };
         }
-        return e;
+        
+        return item;
       });
       
+      // Set success message
+      const message = `Mixed ${sourceEquipment.name} into ${targetEquipment.name}`;
+      
+      // Check if this completes an experiment step
+      const { activeExperiment, experiments } = state;
+      if (activeExperiment) {
+        const experiment = experiments.find(e => e.id === activeExperiment);
+        if (experiment) {
+          // Find the first incomplete step that involves mixing
+          const incompleteStep = experiment.steps.find(s => 
+            !s.completed && 
+            s.requiredActions.some(a => 
+              a.action === "mix" && 
+              (a.equipmentId === sourceId || a.equipmentId === targetId) &&
+              (a.targetIds?.includes(sourceId) || a.targetIds?.includes(targetId))
+            )
+          );
+          
+          if (incompleteStep) {
+            setTimeout(() => {
+              get().completeExperimentStep(experiment.id, incompleteStep.id);
+            }, 500);
+          }
+        }
+      }
+      
       console.log(`Mixed chemicals from ${sourceId} into ${targetId}`);
-      return { equipment: updatedEquipment };
+      return { equipment: updatedEquipment, message };
     }),
 
     heatEquipment: (equipmentId, temperature) => set((state) => {
+      const equipment = state.equipment.find(e => e.id === equipmentId);
+      if (!equipment) {
+        return {};
+      }
+      
       const updatedEquipment = state.equipment.map(e => 
         e.id === equipmentId 
           ? { ...e, temperature } 
           : e
       );
       
+      // Check if this is a bunsen burner being turned on/off
+      if (equipment.type === "bunsen_burner") {
+        // No special effects for bunsen burner itself
+      } 
+      // If it's another type of equipment being heated
+      else if (temperature > 50) {
+        // Check if there's a chemical reaction due to heat
+        if (equipment.contents && equipment.contents.length > 1) {
+          // For some specific combinations, trigger a reaction
+          const contents = equipment.contents.sort().join(",");
+          
+          if (contents.includes("Acid") && contents.includes("Base")) {
+            // Simulate a neutralization reaction
+            setTimeout(() => {
+              const reactionEquipment = state.equipment.map(e => 
+                e.id === equipmentId 
+                  ? { 
+                      ...e, 
+                      contents: ["Neutral Solution"], 
+                      color: "#b2bec3",
+                      temperature: temperature 
+                    } 
+                  : e
+              );
+              
+              set({ 
+                equipment: reactionEquipment,
+                message: "Neutralization reaction occurred! Acid and base formed a salt and water." 
+              });
+            }, 2000);
+          } 
+          else if (contents.includes("Copper Sulfate") && contents.includes("Sodium Hydroxide")) {
+            // Simulate copper hydroxide precipitation
+            setTimeout(() => {
+              const reactionEquipment = state.equipment.map(e => 
+                e.id === equipmentId 
+                  ? { 
+                      ...e, 
+                      contents: ["Copper Hydroxide Precipitate"], 
+                      color: "#0984e3",
+                      temperature: temperature 
+                    } 
+                  : e
+              );
+              
+              set({ 
+                equipment: reactionEquipment,
+                message: "Precipitation reaction! Blue copper hydroxide precipitate formed." 
+              });
+            }, 2000);
+          }
+          else {
+            // Generic reaction
+            setTimeout(() => {
+              const reactionEquipment = state.equipment.map(e => 
+                e.id === equipmentId 
+                  ? { 
+                      ...e, 
+                      contents: ["Reaction Product"], 
+                      color: "#fdcb6e",
+                      temperature: temperature 
+                    } 
+                  : e
+              );
+              
+              set({ 
+                equipment: reactionEquipment,
+                message: "Chemical reaction occurred due to heating!" 
+              });
+            }, 2000);
+          }
+        }
+      }
+      
+      // Check if this completes an experiment step
+      const { activeExperiment, experiments } = state;
+      if (activeExperiment) {
+        const experiment = experiments.find(e => e.id === activeExperiment);
+        if (experiment) {
+          // Find the first incomplete step that involves heating
+          const incompleteStep = experiment.steps.find(s => 
+            !s.completed && 
+            s.requiredActions.some(a => 
+              a.action === "heat" && 
+              a.equipmentId === equipmentId &&
+              (!a.value || temperature >= a.value)
+            )
+          );
+          
+          if (incompleteStep) {
+            setTimeout(() => {
+              get().completeExperimentStep(experiment.id, incompleteStep.id);
+            }, 1000);
+          }
+        }
+      }
+      
       console.log(`Heated equipment ${equipmentId} to ${temperature}°C`);
       return { equipment: updatedEquipment };
     }),
 
-    observeEquipment: (equipmentId) => {
-      const equipment = get().equipment.find(e => e.id === equipmentId);
-      if (equipment) {
-        get().setMessage(`Observing ${equipment.name}: ${equipment.description}`);
-        console.log(`Observing equipment ${equipmentId}`);
+    observeEquipment: (equipmentId) => set((state) => {
+      const equipment = state.equipment.find(e => e.id === equipmentId);
+      if (!equipment) {
+        return {};
       }
-    },
+      
+      let message = `Observing ${equipment.name}: ${equipment.description}`;
+      
+      // Add more specific observation details based on equipment type
+      if (equipment.type === "microscope") {
+        message = "Through the microscope: Observing cellular structures at 400x magnification.";
+      } else if (equipment.type === "beaker" || equipment.type === "test_tube") {
+        if (equipment.contents && equipment.contents.length > 0) {
+          if (equipment.contents.length === 1) {
+            message = `${equipment.name} contains ${equipment.contents[0]}`;
+          } else {
+            message = `${equipment.name} contains a mixture of ${equipment.contents.join(' and ')}`;
+          }
+          
+          if (equipment.temperature && equipment.temperature > 50) {
+            message += ` (heated to ~${equipment.temperature}°C)`;
+          }
+        } else {
+          message = `${equipment.name} is empty`;
+        }
+      } else if (equipment.type === "chemical") {
+        if (equipment.contents && equipment.contents.length > 0) {
+          message = `${equipment.name}: Contains ${equipment.contents[0]}`;
+        }
+      }
+      
+      // Check if this completes an experiment step
+      const { activeExperiment, experiments } = state;
+      if (activeExperiment) {
+        const experiment = experiments.find(e => e.id === activeExperiment);
+        if (experiment) {
+          // Find the first incomplete step that involves observation
+          const incompleteStep = experiment.steps.find(s => 
+            !s.completed && 
+            s.requiredActions.some(a => a.action === "observe" && a.equipmentId === equipmentId)
+          );
+          
+          if (incompleteStep) {
+            setTimeout(() => {
+              get().completeExperimentStep(experiment.id, incompleteStep.id);
+            }, 1000);
+          }
+        }
+      }
+      
+      console.log(`Observing equipment ${equipmentId}`);
+      return { message };
+    }),
     
     arrangeEquipmentForExperiment: (experimentId) => set((state) => {
       const experiment = state.experiments.find(exp => exp.id === experimentId);

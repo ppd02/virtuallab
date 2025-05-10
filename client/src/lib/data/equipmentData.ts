@@ -105,7 +105,7 @@ export const initialEquipment: LabEquipment[] = [
     description: "Dilute hydrochloric acid solution (0.1M)",
     available: true,
     interactive: true,
-    contents: ["HCl"],
+    contents: ["Acid"],
     color: "#f0f8ff"
   },
   {
