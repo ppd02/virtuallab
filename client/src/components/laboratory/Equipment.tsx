@@ -50,7 +50,7 @@ export function Equipment() {
 }
 
 type EquipmentItemProps = {
-  item: ReturnType<typeof useLabStore>["equipment"][0];
+  item: ReturnType<typeof useLabStore.getState>["equipment"][0];
   isSelected: boolean;
   isHeld: boolean;
 };

@@ -25,7 +25,7 @@ export const initialEquipment: LabEquipment[] = [
     description: "A 250ml beaker for larger volume reactions",
     available: true,
     interactive: true,
-    contents: [],
+    contents: ["Water"],
     temperature: 22,
     color: "#a0c8ff"
   },
@@ -117,7 +117,7 @@ export const initialEquipment: LabEquipment[] = [
     description: "Sodium hydroxide solution (0.1M)",
     available: true,
     interactive: true,
-    contents: ["NaOH"],
+    contents: ["Base", "Sodium Hydroxide"],
     color: "#f0f8ff"
   },
   {
@@ -129,8 +129,8 @@ export const initialEquipment: LabEquipment[] = [
     description: "Copper sulfate solution",
     available: true,
     interactive: true,
-    contents: ["CuSO4"],
-    color: "#aadbea"
+    contents: ["Copper Sulfate"],
+    color: "#0984e3"
   },
   {
     id: "chemical4",

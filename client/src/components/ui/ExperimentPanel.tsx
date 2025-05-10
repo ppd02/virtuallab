@@ -84,7 +84,7 @@ function ExperimentCard({
   isActive, 
   onStart 
 }: { 
-  experiment: ReturnType<typeof useLabStore>["experiments"][0],
+  experiment: ReturnType<typeof useLabStore.getState>["experiments"][0],
   isActive: boolean,
   onStart: () => void
 }) {
