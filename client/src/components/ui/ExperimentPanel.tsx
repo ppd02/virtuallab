@@ -82,25 +82,25 @@ export function ExperimentPanel() {
             {currentExperiment.steps.map((step, index) => (
               <li key={step.id} 
                 className={`flex items-start gap-2 p-2 rounded-md transition-all duration-300 ${
-                  !step.completed && index === currentExperiment.steps.filter(s => !s.completed).length ? "bg-blue-50 animate-pulse" : ""
+                  !step.completed && index === currentExperiment.steps.findIndex(s => !s.completed) ? "bg-blue-50 animate-pulse" : ""
                 }`}
               >
                 {step.completed ? (
                   <CheckCircle2 className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
                 ) : (
                   <Circle className={`w-4 h-4 mt-0.5 flex-shrink-0 ${
-                    index === currentExperiment.steps.filter(s => s.completed).length ? "text-blue-500" : "text-gray-400"
+                    index === currentExperiment.steps.findIndex(s => !s.completed) ? "text-blue-500" : "text-gray-400"
                   }`} />
                 )}
                 <span className={
                   step.completed 
                     ? "text-green-500" 
-                    : index === currentExperiment.steps.filter(s => s.completed).length 
+                    : index === currentExperiment.steps.findIndex(s => !s.completed) 
                       ? "font-medium text-blue-700" 
                       : ""
                 }>
                   {step.description}
-                  {!step.completed && index === currentExperiment.steps.filter(s => s.completed).length && step.hint && (
+                  {!step.completed && index === currentExperiment.steps.findIndex(s => !s.completed) && step.hint && (
                     <p className="text-xs text-blue-500 mt-1">Hint: {step.hint}</p>
                   )}
                 </span>

@@ -190,6 +190,125 @@ function LabFurniture() {
         <planeGeometry args={[9, 3]} />
         <meshStandardMaterial color="#455a64" />
       </mesh>
+
+      {/* Lab stools */}
+      {[-2, 0, 2].map((x, index) => (
+        <group key={`stool-${index}`} position={[x, 0, -1.5]}>
+          {/* Stool seat */}
+          <mesh position={[0, 0.65, 0]} castShadow receiveShadow>
+            <cylinderGeometry args={[0.25, 0.25, 0.05, 16]} />
+            <meshStandardMaterial color="#37474f" />
+          </mesh>
+          {/* Stool pole */}
+          <mesh position={[0, 0.32, 0]} castShadow receiveShadow>
+            <cylinderGeometry args={[0.05, 0.05, 0.65, 8]} />
+            <meshStandardMaterial color="#78909c" />
+          </mesh>
+          {/* Stool base */}
+          <mesh position={[0, 0.05, 0]} castShadow receiveShadow>
+            <cylinderGeometry args={[0.3, 0.3, 0.05, 16]} />
+            <meshStandardMaterial color="#37474f" />
+          </mesh>
+        </group>
+      ))}
+
+      {/* Small lab equipment */}
+      {/* Row of books on wall shelf */}
+      {Array.from({ length: 5 }).map((_, index) => (
+        <mesh 
+          key={`book-${index}`} 
+          position={[-6 + index * 0.2 - 0.4, 2.15, -8]} 
+          castShadow 
+          receiveShadow
+        >
+          <boxGeometry args={[0.16, 0.3, 0.7]} />
+          <meshStandardMaterial color={
+            ['#1565c0', '#6a1b9a', '#2e7d32', '#c62828', '#ef6c00'][index % 5]
+          } />
+        </mesh>
+      ))}
+      
+      {/* Microscope slides box */}
+      <mesh position={[1.5, 1.15, -3]} castShadow receiveShadow>
+        <boxGeometry args={[0.4, 0.15, 0.3]} />
+        <meshStandardMaterial color="#b3e5fc" />
+      </mesh>
+
+      {/* Tissue box */}
+      <mesh position={[-1.8, 1.15, -3]} castShadow receiveShadow>
+        <boxGeometry args={[0.3, 0.3, 0.3]} />
+        <meshStandardMaterial color="#e1bee7" />
+      </mesh>
+
+      {/* Safety equipment */}
+      {/* Safety goggles */}
+      <mesh position={[3.5, 1.15, -3]} castShadow receiveShadow>
+        <boxGeometry args={[0.4, 0.1, 0.2]} />
+        <meshStandardMaterial color="#ffecb3" />
+      </mesh>
+
+      {/* Wall clock */}
+      <group position={[0, 2.5, -9.9]}>
+        <mesh castShadow receiveShadow>
+          <cylinderGeometry args={[0.4, 0.4, 0.05, 32]} rotation={[Math.PI / 2, 0, 0]} />
+          <meshStandardMaterial color="#eceff1" />
+        </mesh>
+        <mesh position={[0, 0, 0.03]} castShadow receiveShadow>
+          <cylinderGeometry args={[0.03, 0.03, 0.06, 8]} rotation={[Math.PI / 2, 0, 0]} />
+          <meshStandardMaterial color="#000000" />
+        </mesh>
+        <mesh position={[0.15, 0, 0.03]} rotation={[0, 0, Math.PI / 6]} castShadow receiveShadow>
+          <boxGeometry args={[0.3, 0.02, 0.01]} />
+          <meshStandardMaterial color="#000000" />
+        </mesh>
+        <mesh position={[0, 0.2, 0.03]} rotation={[0, 0, Math.PI / 1.5]} castShadow receiveShadow>
+          <boxGeometry args={[0.2, 0.02, 0.01]} />
+          <meshStandardMaterial color="#000000" />
+        </mesh>
+      </group>
+
+      {/* Whiteboard */}
+      <mesh position={[-8, 1.5, 0]} rotation={[0, Math.PI / 2, 0]} castShadow receiveShadow>
+        <boxGeometry args={[4, 2, 0.05]} />
+        <meshStandardMaterial color="#ffffff" />
+      </mesh>
+      <mesh position={[-9.95, 1.5, 0]} rotation={[0, Math.PI / 2, 0]} castShadow receiveShadow>
+        <boxGeometry args={[4, 2, 0.03]} />
+        <meshStandardMaterial color="#546e7a" />
+      </mesh>
+
+      {/* Ceiling lights */}
+      {[-6, 0, 6].map((x, i) => (
+        <group key={`light-${i}`} position={[x, 2.95, 0]}>
+          <mesh castShadow receiveShadow>
+            <boxGeometry args={[2, 0.1, 0.5]} />
+            <meshStandardMaterial color="#eceff1" />
+          </mesh>
+          <pointLight intensity={0.5} position={[0, -0.1, 0]} color="#ffffff" />
+        </group>
+      ))}
+
+      {/* Posters */}
+      <mesh position={[9.95, 1.5, -5]} rotation={[0, -Math.PI/2, 0]} castShadow receiveShadow>
+        <boxGeometry args={[2, 1.5, 0.01]} />
+        <meshStandardMaterial color="#bbdefb" />
+      </mesh>
+      <mesh position={[9.95, 1.5, 5]} rotation={[0, -Math.PI/2, 0]} castShadow receiveShadow>
+        <boxGeometry args={[2, 1.5, 0.01]} />
+        <meshStandardMaterial color="#f8bbd0" />
+      </mesh>
+
+      {/* Small decorative plants */}
+      <group position={[-4.5, 1.1, -8]}>
+        <mesh castShadow receiveShadow>
+          <cylinderGeometry args={[0.15, 0.2, 0.3, 16]} />
+          <meshStandardMaterial color="#795548" />
+        </mesh>
+        <mesh position={[0, 0.25, 0]} castShadow receiveShadow>
+          <sphereGeometry args={[0.2, 16, 16]} />
+          <meshStandardMaterial color="#2e7d32" />
+        </mesh>
+      </group>
     </>
   );
 }

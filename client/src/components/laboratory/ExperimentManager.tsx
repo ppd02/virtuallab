@@ -50,8 +50,8 @@ export function ExperimentManager() {
             
             // Very simple check - in a real app, we'd check chemical compositions
             return sourceEquip && targetEquip && 
-                   sourceEquip.contents?.length === 0 &&
-                   targetEquip.contents?.length > 0;
+                   (sourceEquip.contents?.length === 0) &&
+                   (targetEquip.contents?.length ?? 0) > 0;
             
           case "heat":
             // Check if equipment has been heated to required temperature
