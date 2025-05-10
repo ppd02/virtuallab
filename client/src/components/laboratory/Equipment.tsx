@@ -174,7 +174,7 @@ function BeakerModel({
   isHeld, 
   onHover 
 }: { 
-  item: ReturnType<typeof useLabStore>["equipment"][0], 
+  item: ReturnType<typeof useLabStore.getState>["equipment"][0], 
   meshRef: React.RefObject<THREE.Mesh>,
   isSelected: boolean,
   isHeld: boolean,
@@ -245,7 +245,7 @@ function TestTubeModel({
   isHeld, 
   onHover 
 }: { 
-  item: ReturnType<typeof useLabStore>["equipment"][0], 
+  item: ReturnType<typeof useLabStore.getState>["equipment"][0], 
   meshRef: React.RefObject<THREE.Mesh>,
   isSelected: boolean,
   isHeld: boolean,
@@ -316,7 +316,7 @@ function BunsenBurnerModel({
   isHeld, 
   onHover 
 }: { 
-  item: ReturnType<typeof useLabStore>["equipment"][0], 
+  item: ReturnType<typeof useLabStore.getState>["equipment"][0], 
   meshRef: React.RefObject<THREE.Mesh>,
   isSelected: boolean,
   isHeld: boolean,
@@ -412,7 +412,7 @@ function MicroscopeModel({
   isHeld, 
   onHover 
 }: { 
-  item: ReturnType<typeof useLabStore>["equipment"][0], 
+  item: ReturnType<typeof useLabStore.getState>["equipment"][0], 
   meshRef: React.RefObject<THREE.Mesh>,
   isSelected: boolean,
   isHeld: boolean,
@@ -486,7 +486,7 @@ function ScaleModel({
   isHeld, 
   onHover 
 }: { 
-  item: ReturnType<typeof useLabStore>["equipment"][0], 
+  item: ReturnType<typeof useLabStore.getState>["equipment"][0], 
   meshRef: React.RefObject<THREE.Mesh>,
   isSelected: boolean,
   isHeld: boolean,
@@ -549,7 +549,7 @@ function ChemicalModel({
   isHeld, 
   onHover 
 }: { 
-  item: ReturnType<typeof useLabStore>["equipment"][0], 
+  item: ReturnType<typeof useLabStore.getState>["equipment"][0], 
   meshRef: React.RefObject<THREE.Mesh>,
   isSelected: boolean,
   isHeld: boolean,

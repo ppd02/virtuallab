@@ -9,7 +9,7 @@ import { Thermometer, Droplets, Scale } from "lucide-react";
 export function EquipmentInfoPanel() {
   const { equipment, selectedEquipment } = useLabStore();
   const { playSuccess, playHit } = useAudio();
-  const [selectedItem, setSelectedItem] = useState<ReturnType<typeof useLabStore>["equipment"][0] | null>(null);
+  const [selectedItem, setSelectedItem] = useState<ReturnType<typeof useLabStore.getState>["equipment"][0] | null>(null);
   
   // Update the selected item when the selected equipment changes
   useEffect(() => {
