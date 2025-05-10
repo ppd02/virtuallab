@@ -71,6 +71,8 @@ type LabStoreState = {
   movePlayer: (direction: "forward" | "backward" | "left" | "right") => void;
   rotatePlayer: (direction: "left" | "right") => void;
   lookUpDown: (direction: "up" | "down") => void;
+  setPlayerRotation: (rotation: number) => void;  // Direct rotation control
+  setCameraLookAngle: (angle: number) => void;    // Direct look angle control
   selectEquipment: (equipmentId: string | null) => void;
   grabEquipment: (equipmentId: string | null) => void;
   placeEquipment: (position: THREE.Vector3) => void;
@@ -83,6 +85,7 @@ type LabStoreState = {
   mixChemicals: (sourceId: string, targetId: string) => void;
   heatEquipment: (equipmentId: string, temperature: number) => void;
   observeEquipment: (equipmentId: string) => void;
+  arrangeEquipmentForExperiment: (experimentId: string) => void; // New method to arrange equipment
 };
 
 export const useLabStore = create<LabStoreState>()(
@@ -149,11 +152,21 @@ export const useLabStore = create<LabStoreState>()(
     lookUpDown: (direction) => set((state) => {
       const lookSpeed = 2;
       const newLookAngle = direction === "up" 
-        ? Math.min(state.cameraLookAngle + lookSpeed, 30) 
-        : Math.max(state.cameraLookAngle - lookSpeed, -30);
+        ? Math.min(state.cameraLookAngle + lookSpeed, 45) 
+        : Math.max(state.cameraLookAngle - lookSpeed, -45);
       
       console.log(`Camera look ${direction}. New angle:`, newLookAngle);
       return { cameraLookAngle: newLookAngle };
+    }),
+    
+    setPlayerRotation: (rotation) => set(() => {
+      console.log(`Direct player rotation set to:`, rotation);
+      return { playerRotation: rotation };
+    }),
+    
+    setCameraLookAngle: (angle) => set(() => {
+      console.log(`Direct camera look angle set to:`, angle);
+      return { cameraLookAngle: angle };
     }),
 
     selectEquipment: (equipmentId) => set((state) => {
@@ -313,6 +326,128 @@ export const useLabStore = create<LabStoreState>()(
         get().setMessage(`Observing ${equipment.name}: ${equipment.description}`);
         console.log(`Observing equipment ${equipmentId}`);
       }
-    }
+    },
+    
+    arrangeEquipmentForExperiment: (experimentId) => set((state) => {
+      const experiment = state.experiments.find(exp => exp.id === experimentId);
+      if (!experiment) return {};
+      
+      console.log(`Arranging equipment for experiment: ${experiment.name}`);
+      
+      // Get all required equipment IDs for this experiment
+      const requiredEquipmentIds = new Set<string>();
+      experiment.steps.forEach(step => {
+        step.requiredEquipment.forEach(id => requiredEquipmentIds.add(id));
+      });
+      
+      // Position equipment on the lab bench
+      const updatedEquipment = state.equipment.map(item => {
+        // If this equipment is needed for the experiment
+        if (requiredEquipmentIds.has(item.id)) {
+          // Set a specific position based on equipment type
+          const basePosition = new THREE.Vector3(0, 1, -3); // Center of lab bench
+          
+          switch (item.type) {
+            case "beaker":
+              // Beakers toward the front of the bench
+              return {
+                ...item,
+                position: new THREE.Vector3(
+                  basePosition.x + (Math.random() * 2 - 1), // Random x position along bench
+                  basePosition.y,
+                  basePosition.z + 0.3 // Toward the front
+                ),
+                available: true,
+                interactive: true
+              };
+              
+            case "test_tube":
+              // Test tubes to the right side
+              return {
+                ...item,
+                position: new THREE.Vector3(
+                  basePosition.x + 1.5 + (Math.random() * 0.5), // Right side
+                  basePosition.y,
+                  basePosition.z + (Math.random() * 0.6 - 0.3) // Random z position
+                ),
+                available: true,
+                interactive: true
+              };
+              
+            case "chemical":
+              // Chemicals to the left side
+              return {
+                ...item,
+                position: new THREE.Vector3(
+                  basePosition.x - 1.5 - (Math.random() * 0.5), // Left side
+                  basePosition.y + 0.2, // Slightly elevated
+                  basePosition.z + (Math.random() * 0.6 - 0.3) // Random z position
+                ),
+                available: true,
+                interactive: true
+              };
+              
+            case "bunsen_burner":
+              // Bunsen burner in the center back
+              return {
+                ...item,
+                position: new THREE.Vector3(
+                  basePosition.x - 0.5,
+                  basePosition.y - 0.1, // Slightly lower
+                  basePosition.z - 0.5 // Toward the back
+                ),
+                available: true,
+                interactive: true
+              };
+              
+            case "microscope":
+              // Microscope in the center
+              return {
+                ...item,
+                position: new THREE.Vector3(
+                  basePosition.x + 0.5,
+                  basePosition.y,
+                  basePosition.z - 0.3 // Slightly back
+                ),
+                available: true,
+                interactive: true
+              };
+              
+            case "scale":
+              // Scale to the right back
+              return {
+                ...item,
+                position: new THREE.Vector3(
+                  basePosition.x + 2,
+                  basePosition.y,
+                  basePosition.z - 0.5 // Toward the back
+                ),
+                available: true,
+                interactive: true
+              };
+              
+            default:
+              return item;
+          }
+        }
+        
+        // For equipment not needed in this experiment, move them to storage
+        return {
+          ...item,
+          position: new THREE.Vector3(
+            -6 + Math.random() * 2, // Random position in storage
+            1.5 + (item.type === "chemical" ? 0.5 : 0), // On shelf
+            -8 + Math.random() * 1 // Back wall shelf
+          ),
+          available: false,
+          interactive: false // Not interactive when in storage
+        };
+      });
+      
+      // Set a message about the experiment
+      get().setMessage(`Prepared equipment for: ${experiment.name}`);
+      
+      return { equipment: updatedEquipment };
+    })
   }))
 );

@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useThree, useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { useLabStore } from "../../lib/stores/useLabStore";
@@ -7,7 +7,7 @@ import { useKeyboardControls } from "@react-three/drei";
 import { useAudio } from "../../lib/stores/useAudio";
 
 export function InteractiveObjects() {
-  const { camera } = useThree();
+  const { camera, gl } = useThree();
   const { handleInteract } = useEquipmentInteraction();
   const { playHit } = useAudio();
   
@@ -17,7 +17,12 @@ export function InteractiveObjects() {
   // Track previous interact state for edge detection
   const prevInteractRef = useRef(false);
   
-  // Add handlers for keyboard navigation
+  // Mouse control states
+  const [isRightMouseDown, setIsRightMouseDown] = useState(false);
+  const mousePosition = useRef({ x: 0, y: 0 });
+  const prevMousePosition = useRef({ x: 0, y: 0 });
+  
+  // Add handlers for keyboard navigation and mouse controls
   useEffect(() => {
     // We'll handle movement sounds in the frame loop instead of with a subscription
     const soundInterval = setInterval(() => {
@@ -30,17 +35,55 @@ export function InteractiveObjects() {
       }
     }, 200); // Check movement every 200ms
     
+    // Mouse control handlers
+    const handleMouseDown = (event: MouseEvent) => {
+      // Right mouse button (button 2)
+      if (event.button === 2) {
+        setIsRightMouseDown(true);
+        mousePosition.current = { x: event.clientX, y: event.clientY };
+        prevMousePosition.current = { x: event.clientX, y: event.clientY };
+        
+        // Disable context menu when right-clicking
+        gl.domElement.oncontextmenu = (e) => {
+          e.preventDefault();
+          return false;
+        };
+      }
+    };
+    
+    const handleMouseUp = (event: MouseEvent) => {
+      if (event.button === 2) {
+        setIsRightMouseDown(false);
+      }
+    };
+    
+    const handleMouseMove = (event: MouseEvent) => {
+      if (isRightMouseDown) {
+        mousePosition.current = { x: event.clientX, y: event.clientY };
+      }
+    };
+    
+    // Add mouse event listeners
+    window.addEventListener("mousedown", handleMouseDown);
+    window.addEventListener("mouseup", handleMouseUp);
+    window.addEventListener("mousemove", handleMouseMove);
+    
     return () => {
       clearInterval(soundInterval);
+      window.removeEventListener("mousedown", handleMouseDown);
+      window.removeEventListener("mouseup", handleMouseUp);
+      window.removeEventListener("mousemove", handleMouseMove);
     };
-  }, [getKeyboardState, playHit]);
+  }, [getKeyboardState, playHit, isRightMouseDown, gl.domElement]);
   
   // Handle movement with frame timing
   useFrame(() => {
     const {
       movePlayer,
       rotatePlayer,
-      lookUpDown
+      lookUpDown,
+      setPlayerRotation,
+      setCameraLookAngle
     } = useLabStore.getState();
     
     // Get current keyboard state
@@ -52,13 +95,37 @@ export function InteractiveObjects() {
     if (state.left) movePlayer("left");
     if (state.right) movePlayer("right");
     
-    // Handle player rotation
+    // Handle keyboard rotation (as a fallback)
     if (state.rotateLeft) rotatePlayer("left");
     if (state.rotateRight) rotatePlayer("right");
-    
-    // Handle camera look angle
     if (state.rotateLookUp) lookUpDown("up");
     if (state.rotateLookDown) lookUpDown("down");
+    
+    // Handle mouse rotation and look
+    if (isRightMouseDown) {
+      // Calculate mouse movement delta
+      const deltaX = mousePosition.current.x - prevMousePosition.current.x;
+      const deltaY = mousePosition.current.y - prevMousePosition.current.y;
+      
+      // Update player rotation (horizontal mouse movement)
+      if (deltaX !== 0) {
+        const { playerRotation } = useLabStore.getState();
+        // Adjust sensitivity as needed
+        const newRotation = playerRotation - deltaX * 0.2;
+        setPlayerRotation(newRotation);
+      }
+      
+      // Update camera look angle (vertical mouse movement)
+      if (deltaY !== 0) {
+        const { cameraLookAngle } = useLabStore.getState();
+        // Adjust sensitivity as needed
+        const newLookAngle = Math.max(Math.min(cameraLookAngle + deltaY * 0.2, 45), -45);
+        setCameraLookAngle(newLookAngle);
+      }
+      
+      // Update previous mouse position
+      prevMousePosition.current = { ...mousePosition.current };
+    }
     
     // Handle interactions with equipment (edge detection)
     if (state.interact && !prevInteractRef.current) {

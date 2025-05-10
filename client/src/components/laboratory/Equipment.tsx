@@ -1,6 +1,6 @@
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { useLabStore } from "../../lib/stores/useLabStore";
 import { Text } from "@react-three/drei";
 
@@ -58,6 +58,20 @@ type EquipmentItemProps = {
 function EquipmentItem({ item, isSelected, isHeld }: EquipmentItemProps) {
   const meshRef = useRef<THREE.Mesh>(null);
   const [hovered, setHovered] = useState(false);
+  const { setMessage } = useLabStore();
+  
+  // Show equipment name on hover
+  useEffect(() => {
+    if (hovered && !isSelected && !isHeld) {
+      setMessage(`${item.name} - Click to select`);
+      return () => {
+        // Only clear the message if we set it and nothing else has changed it
+        if (!isSelected && !isHeld) {
+          setMessage(null);
+        }
+      };
+    }
+  }, [hovered, isSelected, isHeld, item.name, setMessage]);
   
   useFrame(() => {
     if (meshRef.current && (isSelected || hovered)) {

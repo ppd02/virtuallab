@@ -6,7 +6,7 @@ import { Button } from "./button";
 import { CheckCircle2, Circle } from "lucide-react";
 
 export function ExperimentPanel() {
-  const { experiments, activeExperiment, startExperiment } = useLabStore();
+  const { experiments, activeExperiment, startExperiment, arrangeEquipmentForExperiment } = useLabStore();
   const [selectedTab, setSelectedTab] = useState<"chemistry" | "physics">("chemistry");
   
   const currentExperiment = activeExperiment 
@@ -16,6 +16,12 @@ export function ExperimentPanel() {
   // Filter experiments by subject
   const chemistryExperiments = experiments.filter(exp => exp.subject === "chemistry");
   const physicsExperiments = experiments.filter(exp => exp.subject === "physics");
+  
+  // Handler for starting experiments and arranging equipment
+  const handleStartExperiment = (experimentId: string) => {
+    startExperiment(experimentId);
+    arrangeEquipmentForExperiment(experimentId);
+  };
   
   return (
     <Card className="fixed left-4 top-4 w-80 h-[60vh] bg-card text-card-foreground overflow-hidden flex flex-col">
@@ -35,7 +41,7 @@ export function ExperimentPanel() {
               key={experiment.id} 
               experiment={experiment} 
               isActive={experiment.id === activeExperiment}
-              onStart={() => startExperiment(experiment.id)}
+              onStart={() => handleStartExperiment(experiment.id)}
             />
           ))}
         </TabsContent>
@@ -46,7 +52,7 @@ export function ExperimentPanel() {
               key={experiment.id} 
               experiment={experiment} 
               isActive={experiment.id === activeExperiment}
-              onStart={() => startExperiment(experiment.id)}
+              onStart={() => handleStartExperiment(experiment.id)}
             />
           ))}
         </TabsContent>

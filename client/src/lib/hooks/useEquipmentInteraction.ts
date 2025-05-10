@@ -62,14 +62,30 @@ export function useEquipmentInteraction() {
     return null;
   };
 
-  // Handle equipment selection
+  // Handle equipment selection with improved feedback
   const handleSelect = () => {
     const interaction = checkInteraction();
     
     if (interaction) {
       const { equipmentId, equipment } = interaction;
       selectEquipment(equipmentId);
-      setMessage(`Selected: ${equipment.name}`);
+      
+      // More informative messages based on equipment type
+      let message = `Selected: ${equipment.name}`;
+      
+      if (equipment.type === "chemical") {
+        message += ` - Contains: ${equipment.contents?.join(", ") || "empty"}`;
+      } else if (equipment.type === "beaker" || equipment.type === "test_tube") {
+        message += ` - ${equipment.contents?.length ? 
+          `Contains: ${equipment.contents.join(", ")}` : 
+          "Empty - ready for chemicals"}`;
+      } else if (equipment.type === "bunsen_burner") {
+        message += ` - ${equipment.temperature && equipment.temperature > 50 ? 
+          `Active (${equipment.temperature}°C)` : 
+          "Inactive - press E to light"}`;
+      }
+      
+      setMessage(message);
       playHit();
       console.log(`Selected equipment: ${equipment.name}`);
       return true;
@@ -80,7 +96,7 @@ export function useEquipmentInteraction() {
     }
   };
 
-  // Handle grabbing equipment
+  // Handle grabbing equipment with improved feedback
   const handleGrab = () => {
     if (heldEquipment) {
       // If already holding something, try to place it
@@ -89,16 +105,43 @@ export function useEquipmentInteraction() {
         // Place it at the interaction point
         placeEquipment(interaction.point);
         playHit();
+        
+        // Get the held equipment details
+        const heldItem = useLabStore.getState().equipment.find(e => e.id === heldEquipment);
+        setMessage(`Placed ${heldItem?.name || 'equipment'} on the table`);
         console.log(`Placed equipment at:`, interaction.point);
+      } else {
+        // Place at default position in front of player
+        const { playerPosition, playerRotation } = useLabStore.getState();
+        const playerRotationRad = (playerRotation * Math.PI) / 180;
+        const offsetX = -Math.sin(playerRotationRad) * 1;
+        const offsetZ = -Math.cos(playerRotationRad) * 1;
+        
+        const placementPosition = new THREE.Vector3(
+          playerPosition.x + offsetX,
+          1, // Fixed y position for table height
+          playerPosition.z + offsetZ
+        );
+        
+        placeEquipment(placementPosition);
+        playHit();
+        
+        const heldItem = useLabStore.getState().equipment.find(e => e.id === heldEquipment);
+        setMessage(`Placed ${heldItem?.name || 'equipment'} on the table`);
       }
       return;
     }
     
     // Try to grab something
     if (selectedEquipment) {
+      const equipment = useLabStore.getState().equipment.find(e => e.id === selectedEquipment);
       grabEquipment(selectedEquipment);
-      playHit();
-      console.log(`Grabbed equipment: ${selectedEquipment}`);
+      
+      if (equipment) {
+        setMessage(`Grabbed: ${equipment.name} - Use E to place it`);
+        playHit();
+        console.log(`Grabbed equipment: ${selectedEquipment}`);
+      }
     }
   };
 
