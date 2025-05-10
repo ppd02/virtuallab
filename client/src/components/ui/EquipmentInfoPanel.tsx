@@ -183,8 +183,39 @@ export function EquipmentInfoPanel() {
                         );
                         
                         useLabStore.setState({ equipment: updatedEquipment });
-                        useLabStore.getState().setMessage("Chemical reaction occurred!");
+                        useLabStore.getState().setMessage("🧪 Chemical reaction occurred! Experiment progressing...");
                         playSuccess();
+                        
+                        // Add visual notification that persists longer
+                        const notification = document.createElement('div');
+                        notification.innerHTML = '🧪 Reaction Complete!';
+                        notification.style.position = 'fixed';
+                        notification.style.top = '50%';
+                        notification.style.left = '50%';
+                        notification.style.transform = 'translate(-50%, -50%)';
+                        notification.style.backgroundColor = 'rgba(0, 255, 0, 0.2)';
+                        notification.style.color = 'white';
+                        notification.style.padding = '20px';
+                        notification.style.borderRadius = '10px';
+                        notification.style.fontSize = '24px';
+                        notification.style.fontWeight = 'bold';
+                        notification.style.zIndex = '1000';
+                        notification.style.animation = 'pulse 1s infinite';
+                        
+                        const style = document.createElement('style');
+                        style.innerHTML = `
+                          @keyframes pulse {
+                            0% { transform: translate(-50%, -50%) scale(1); }
+                            50% { transform: translate(-50%, -50%) scale(1.2); }
+                            100% { transform: translate(-50%, -50%) scale(1); }
+                          }
+                        `;
+                        document.head.appendChild(style);
+                        document.body.appendChild(notification);
+                        
+                        setTimeout(() => {
+                          document.body.removeChild(notification);
+                        }, 3000);
                         
                         // Check if this completes an experiment step
                         const { activeExperiment, experiments } = useLabStore.getState();

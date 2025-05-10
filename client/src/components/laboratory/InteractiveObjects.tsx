@@ -118,8 +118,8 @@ export function InteractiveObjects() {
       // Update camera look angle (vertical mouse movement)
       if (deltaY !== 0) {
         const { cameraLookAngle } = useLabStore.getState();
-        // Adjust sensitivity as needed
-        const newLookAngle = Math.max(Math.min(cameraLookAngle + deltaY * 0.2, 45), -45);
+        // Adjust sensitivity as needed - INVERTED the sign for deltaY to fix axis
+        const newLookAngle = Math.max(Math.min(cameraLookAngle - deltaY * 0.2, 45), -45);
         setCameraLookAngle(newLookAngle);
       }
       

@@ -60,16 +60,50 @@ export function ExperimentPanel() {
       
       {currentExperiment && (
         <div className="p-4 border-t">
+          <div className="flex justify-between items-center mb-2">
+            <h3 className="font-medium">Progress:</h3>
+            <div className="text-xs">
+              {currentExperiment.steps.filter(s => s.completed).length} of {currentExperiment.steps.length} steps
+            </div>
+          </div>
+          
+          {/* Progress bar */}
+          <div className="w-full h-2 bg-gray-200 rounded-full mb-3">
+            <div 
+              className="h-full bg-green-500 rounded-full transition-all duration-500 ease-out"
+              style={{ 
+                width: `${(currentExperiment.steps.filter(s => s.completed).length / currentExperiment.steps.length) * 100}%` 
+              }}
+            ></div>
+          </div>
+          
           <h3 className="font-medium mb-2">Current Steps:</h3>
           <ul className="space-y-2 text-sm">
-            {currentExperiment.steps.map(step => (
-              <li key={step.id} className="flex items-start gap-2">
+            {currentExperiment.steps.map((step, index) => (
+              <li key={step.id} 
+                className={`flex items-start gap-2 p-2 rounded-md transition-all duration-300 ${
+                  !step.completed && index === currentExperiment.steps.filter(s => !s.completed).length ? "bg-blue-50 animate-pulse" : ""
+                }`}
+              >
                 {step.completed ? (
                   <CheckCircle2 className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
                 ) : (
-                  <Circle className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
+                  <Circle className={`w-4 h-4 mt-0.5 flex-shrink-0 ${
+                    index === currentExperiment.steps.filter(s => s.completed).length ? "text-blue-500" : "text-gray-400"
+                  }`} />
                 )}
-                <span className={step.completed ? "text-green-500" : ""}>{step.description}</span>
+                <span className={
+                  step.completed 
+                    ? "text-green-500" 
+                    : index === currentExperiment.steps.filter(s => s.completed).length 
+                      ? "font-medium text-blue-700" 
+                      : ""
+                }>
+                  {step.description}
+                  {!step.completed && index === currentExperiment.steps.filter(s => s.completed).length && step.hint && (
+                    <p className="text-xs text-blue-500 mt-1">Hint: {step.hint}</p>
+                  )}
+                </span>
               </li>
             ))}
           </ul>
