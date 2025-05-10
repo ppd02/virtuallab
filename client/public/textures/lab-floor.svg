@@ -1,0 +1,19 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="512" height="512" fill="#E5E5E5"/>
+  <rect x="0" y="0" width="128" height="128" fill="#EBEBEB"/>
+  <rect x="128" y="0" width="128" height="128" fill="#E5E5E5"/>
+  <rect x="256" y="0" width="128" height="128" fill="#EBEBEB"/>
+  <rect x="384" y="0" width="128" height="128" fill="#E5E5E5"/>
+  <rect x="0" y="128" width="128" height="128" fill="#E5E5E5"/>
+  <rect x="128" y="128" width="128" height="128" fill="#EBEBEB"/>
+  <rect x="256" y="128" width="128" height="128" fill="#E5E5E5"/>
+  <rect x="384" y="128" width="128" height="128" fill="#EBEBEB"/>
+  <rect x="0" y="256" width="128" height="128" fill="#EBEBEB"/>
+  <rect x="128" y="256" width="128" height="128" fill="#E5E5E5"/>
+  <rect x="256" y="256" width="128" height="128" fill="#EBEBEB"/>
+  <rect x="384" y="256" width="128" height="128" fill="#E5E5E5"/>
+  <rect x="0" y="384" width="128" height="128" fill="#E5E5E5"/>
+  <rect x="128" y="384" width="128" height="128" fill="#EBEBEB"/>
+  <rect x="256" y="384" width="128" height="128" fill="#E5E5E5"/>
+  <rect x="384" y="384" width="128" height="128" fill="#EBEBEB"/>
+</svg>
